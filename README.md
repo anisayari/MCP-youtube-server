@@ -2,6 +2,36 @@
 
 This is a TypeScript MCP (Model Context Protocol) server that wraps the YouTube API and can be deployed as a Cloudflare Worker endpoint.
 
+## Deployment Options
+
+### Option 1: Deploy from GitHub (Recommended)
+
+1. Fork this repository
+2. Go to your Cloudflare Dashboard → Workers & Pages
+3. Create application → Workers → Deploy from GitHub
+4. Select your forked repository
+5. Add environment variables in Cloudflare Dashboard:
+   - `YOUTUBE_API_KEY`
+   - `OPENAI_API_KEY`
+
+### Option 2: Deploy with Wrangler CLI
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Add secrets:
+   ```bash
+   wrangler secret put YOUTUBE_API_KEY
+   wrangler secret put OPENAI_API_KEY
+   ```
+4. Deploy: `npm run deploy`
+
+### Option 3: GitHub Actions (CI/CD)
+
+1. Add these secrets to your GitHub repository:
+   - `CLOUDFLARE_API_TOKEN` (create at https://dash.cloudflare.com/profile/api-tokens)
+   - `CLOUDFLARE_ACCOUNT_ID` (find in Workers dashboard)
+2. Push to main branch to auto-deploy
+
 ## Features
 
 - YouTube video search with caption/transcript retrieval

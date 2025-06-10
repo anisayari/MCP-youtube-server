@@ -31,6 +31,60 @@ Generate text completions using OpenAI.
 - `model` (string, optional): OpenAI model to use (default: "gpt-4o-mini")
 - `maxTokens` (number, optional): Maximum tokens in response (default: 1000)
 
+### 3. Rewrite Text (`rewrite_text`)
+Rewrite text in a specific style while maintaining the original meaning.
+
+**Parameters:**
+- `text` (string, required): Text to rewrite
+- `style` (string, optional): Style for rewriting - "professional", "casual", "formal", "creative" (default: "professional")
+
+### 4. Summarize Text (`summarize_text`)
+Create a summary of the provided text.
+
+**Parameters:**
+- `text` (string, required): Text to summarize
+- `length` (string, optional): Summary length - "short", "medium", "long" (default: "medium")
+
+### 5. Expand Text (`expand_text`)
+Expand text with additional details and examples.
+
+**Parameters:**
+- `text` (string, required): Text to expand
+- `targetLength` (string, optional): Target expansion (default: "double")
+
+### 6. Fix Grammar (`fix_grammar`)
+Fix grammar, spelling, and punctuation errors.
+
+**Parameters:**
+- `text` (string, required): Text to fix
+
+### 7. Translate Text (`translate_text`)
+Translate text to another language.
+
+**Parameters:**
+- `text` (string, required): Text to translate
+- `targetLanguage` (string, optional): Target language (default: "Spanish")
+
+### 8. Simplify Text (`simplify_text`)
+Simplify text for easier reading.
+
+**Parameters:**
+- `text` (string, required): Text to simplify
+- `readingLevel` (string, optional): Target reading level - "elementary", "high-school", "general" (default: "general")
+
+### 9. Analyze Video Landscape (`analyze_video_landscape`)
+Analyze existing YouTube videos on a topic and suggest unique angles for new content.
+
+**Parameters:**
+- `query` (string, required): Topic to analyze
+- `maxVideos` (number, optional): Number of videos to analyze (default: 10)
+
+**Returns:**
+- Analysis of common themes in existing videos
+- Identified gaps in coverage
+- 5 unique video ideas with specific recommendations
+- Video metadata including URLs, thumbnails, and view counts
+
 ## 📡 API Endpoints
 
 ### REST Endpoints
@@ -266,14 +320,21 @@ npm run deploy
   {
     "videoId": "dQw4w9WgXcQ",
     "title": "Video Title",
+    "description": "Video description...",
+    "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "thumbnail": {
+      "default": "https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg",
+      "medium": "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
+      "high": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
+    },
+    "publishedAt": "2009-10-25T06:57:33Z",
+    "channelTitle": "Channel Name",
+    "viewCount": "1234567890",
+    "duration": "3:32",
     "captions": [
       {
         "language": "en",
         "text": "Full transcript text..."
-      },
-      {
-        "language": "es",
-        "text": "Transcripción completa..."
       }
     ]
   }

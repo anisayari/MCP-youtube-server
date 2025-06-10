@@ -52,7 +52,10 @@ export default {
         const query = url.searchParams.get('query');
         const maxResults = parseInt(url.searchParams.get('maxResults') || '20');
 
+        console.log(`[YouTube Search] Query: "${query}", MaxResults: ${maxResults}`);
+
         if (!query) {
+          console.error('[YouTube Search] Missing query parameter');
           return new Response(JSON.stringify({ error: 'Query parameter is required' }), {
             status: 400,
             headers,
@@ -63,11 +66,15 @@ export default {
         const cacheKey = `youtube:${query}:${maxResults}`;
         const cached = await env.CACHE.get(cacheKey, 'json');
         if (cached) {
+          console.log(`[YouTube Search] Cache hit for query: "${query}"`);
           return new Response(JSON.stringify(cached), { headers });
         }
 
+        console.log(`[YouTube Search] Cache miss, fetching from YouTube API...`);
         const youtubeAPI = new YouTubeAPI(env.YOUTUBE_API_KEY);
         const videos = await youtubeAPI.searchVideos(query, maxResults);
+
+        console.log(`[YouTube Search] Found ${videos.length} videos for query: "${query}"`);
 
         // Cache for 1 hour
         await env.CACHE.put(cacheKey, JSON.stringify(videos), { expirationTtl: 3600 });
@@ -379,26 +386,40 @@ export default {
           const { name, arguments: args } = body.params;
 
           if (name === 'search_youtube_videos') {
+            console.log(`[MCP] search_youtube_videos called with query: "${args.query}", maxResults: ${args.maxResults}`);
+            
             const maxResults = args.maxResults || 20;
             
             // Check cache first
             const cacheKey = `youtube:${args.query}:${maxResults}`;
             const cached = await env.CACHE.get(cacheKey, 'json');
             if (cached) {
+              console.log(`[MCP] Cache hit for search_youtube_videos`);
               return new Response(JSON.stringify({
                 content: [{ type: 'text', text: JSON.stringify(cached, null, 2) }],
               }), { headers });
             }
             
-            const youtubeAPI = new YouTubeAPI(env.YOUTUBE_API_KEY);
-            const videos = await youtubeAPI.searchVideos(args.query, maxResults);
-            
-            // Cache for 1 hour
-            await env.CACHE.put(cacheKey, JSON.stringify(videos), { expirationTtl: 3600 });
-            
-            return new Response(JSON.stringify({
-              content: [{ type: 'text', text: JSON.stringify(videos, null, 2) }],
-            }), { headers });
+            console.log(`[MCP] Cache miss, calling YouTube API...`);
+            try {
+              const youtubeAPI = new YouTubeAPI(env.YOUTUBE_API_KEY);
+              const videos = await youtubeAPI.searchVideos(args.query, maxResults);
+              
+              console.log(`[MCP] YouTube API returned ${videos.length} videos`);
+              
+              // Cache for 1 hour
+              await env.CACHE.put(cacheKey, JSON.stringify(videos), { expirationTtl: 3600 });
+              
+              return new Response(JSON.stringify({
+                content: [{ type: 'text', text: JSON.stringify(videos, null, 2) }],
+              }), { headers });
+            } catch (error: any) {
+              console.error(`[MCP] Error in search_youtube_videos:`, error);
+              return new Response(JSON.stringify({
+                error: error.message,
+                content: [{ type: 'text', text: `Error: ${error.message}` }],
+              }), { headers, status: 500 });
+            }
           }
 
           if (name === 'openai_completion') {

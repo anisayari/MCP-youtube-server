@@ -2,6 +2,9 @@ name = "youtube-mcp-server"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
+[observability]
+enabled = true
+
 [[kv_namespaces]]
 binding = "CACHE"
 id = "f1e52f49375f44a1be3449260639d482"

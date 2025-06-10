@@ -29,9 +29,17 @@ export interface YouTubeComment {
 }
 
 export class YouTubeAPI {
-  constructor(private apiKey: string) {}
+  constructor(private apiKey: string) {
+    if (!apiKey) {
+      console.error('[YouTubeAPI] WARNING: No API key provided!');
+    } else {
+      console.log(`[YouTubeAPI] Initialized with API key: ${apiKey.substring(0, 10)}...`);
+    }
+  }
 
   async searchVideos(query: string, maxResults: number = 20): Promise<YouTubeVideo[]> {
+    console.log(`[YouTubeAPI] Searching for: "${query}" with maxResults: ${maxResults}`);
+    
     const searchUrl = new URL('https://www.googleapis.com/youtube/v3/search');
     searchUrl.searchParams.append('part', 'snippet');
     searchUrl.searchParams.append('q', query);
@@ -40,16 +48,25 @@ export class YouTubeAPI {
     searchUrl.searchParams.append('maxResults', maxResults.toString());
     searchUrl.searchParams.append('key', this.apiKey);
 
+    console.log(`[YouTubeAPI] Request URL: ${searchUrl.toString().replace(this.apiKey, 'API_KEY_HIDDEN')}`);
+
     const searchResponse = await fetch(searchUrl.toString());
+    console.log(`[YouTubeAPI] Response status: ${searchResponse.status}`);
+    
     if (!searchResponse.ok) {
-      throw new Error(`YouTube search failed: ${searchResponse.statusText}`);
+      const errorBody = await searchResponse.text();
+      console.error(`[YouTubeAPI] Error response: ${errorBody}`);
+      throw new Error(`YouTube search failed: ${searchResponse.statusText} - ${errorBody}`);
     }
 
     const searchData = await searchResponse.json();
+    console.log(`[YouTubeAPI] Found ${searchData.items?.length || 0} items`);
+    
     const videos: YouTubeVideo[] = [];
 
     // Get video IDs for statistics
     const videoIds = searchData.items.map((item: any) => item.id.videoId).join(',');
+    console.log(`[YouTubeAPI] Video IDs for stats: ${videoIds}`);
     
     // Fetch video statistics
     let videoStats: any = {};
@@ -59,10 +76,16 @@ export class YouTubeAPI {
       statsUrl.searchParams.append('id', videoIds);
       statsUrl.searchParams.append('key', this.apiKey);
       
+      console.log(`[YouTubeAPI] Fetching stats...`);
+      
       try {
         const statsResponse = await fetch(statsUrl.toString());
+        console.log(`[YouTubeAPI] Stats response status: ${statsResponse.status}`);
+        
         if (statsResponse.ok) {
           const statsData = await statsResponse.json();
+          console.log(`[YouTubeAPI] Got stats for ${statsData.items?.length || 0} videos`);
+          
           statsData.items.forEach((item: any) => {
             videoStats[item.id] = {
               viewCount: item.statistics?.viewCount || '0',
@@ -71,7 +94,7 @@ export class YouTubeAPI {
           });
         }
       } catch (error) {
-        console.error('Failed to fetch video statistics:', error);
+        console.error('[YouTubeAPI] Failed to fetch video statistics:', error);
       }
     }
 

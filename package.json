@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "build": "echo 'No build step required for Cloudflare Workers'",
     "test": "vitest"
   },
   "dependencies": {

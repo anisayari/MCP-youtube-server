@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube MCP Server Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            margin: 20px 0;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        input {
+            width: 300px;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>YouTube MCP Server Test</h1>
+    
+    <div class="container">
+        <h2>YouTube Search</h2>
+        <input type="text" id="searchQuery" placeholder="Enter search query" value="javascript tutorial">
+        <input type="number" id="maxResults" placeholder="Max results" value="2" min="1" max="50">
+        <button onclick="searchYouTube()">Search YouTube</button>
+    </div>
+
+    <div class="container">
+        <h2>Test MCP Endpoints</h2>
+        <button onclick="listTools()">List MCP Tools</button>
+        <button onclick="callMCPSearch()">Call MCP Search</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8787';
+
+        function showResult(data, error = false) {
+            const results = document.getElementById('results');
+            results.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+            results.className = error ? 'error' : '';
+        }
+
+        async function searchYouTube() {
+            const query = document.getElementById('searchQuery').value;
+            const maxResults = document.getElementById('maxResults').value;
+            
+            try {
+                showResult('Searching...');
+                const response = await fetch(`${API_BASE}/youtube/search?query=${encodeURIComponent(query)}&maxResults=${maxResults}`);
+                const data = await response.json();
+                showResult(data, !response.ok);
+            } catch (error) {
+                showResult(`Error: ${error.message}`, true);
+            }
+        }
+
+        async function listTools() {
+            try {
+                showResult('Fetching tools list...');
+                const response = await fetch(`${API_BASE}/mcp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ method: 'tools/list' })
+                });
+                const data = await response.json();
+                showResult(data, !response.ok);
+            } catch (error) {
+                showResult(`Error: ${error.message}`, true);
+            }
+        }
+
+        async function callMCPSearch() {
+            const query = document.getElementById('searchQuery').value;
+            
+            try {
+                showResult('Calling MCP search...');
+                const response = await fetch(`${API_BASE}/mcp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        method: 'tools/call',
+                        params: {
+                            name: 'search_youtube_videos',
+                            arguments: { query, maxResults: 2 }
+                        }
+                    })
+                });
+                const data = await response.json();
+                showResult(data, !response.ok);
+            } catch (error) {
+                showResult(`Error: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>
